@@ -70,17 +70,21 @@ public class RunQueryInstanceFromQueryMasterHandler extends RequestHandler {
             RequestMessageType requestMessageType = getI2B2RequestMessageType(requestXml);
             long timeout = requestMessageType.getRequestHeader()
                                              .getResultWaittimeMs();
-            String userId = headerType.getUser().getLogin();
+            //String userId = headerType.getUser().getLogin();
+            // Workaround since it wasn't grabbing the right userId
+            String userId = requestMessageType.getMessageHeader().getSecurity().getUsername();
             String masterId = masterRequestType.getQueryMasterId();
+            String password = requestMessageType.getMessageHeader().getSecurity().getPassword().getValue();
 
         	//TODO removed ejbs
 //            QueryManagerLocalHome queryManagerLocalHome = qpUtil.getQueryManagerLocalHome();
  //           QueryManagerLocal queryManagerLocal = queryManagerLocalHome.create();
             QueryManagerBean query = new QueryManagerBean();
             instanceResult = query.runQueryMaster(this.getDataSourceLookup(),userId,
-                    masterId, timeout);
+                    masterId, timeout, password);
             instanceResult.setStatus(this.buildCRCStausType(RequestHandlerDelegate.DONE_TYPE, "DONE"));
         } catch (Exception e) { 
+                e.printStackTrace();
         	instanceResult = new InstanceResultResponseType();
         	instanceResult.setStatus(this.buildCRCStausType(RequestHandlerDelegate.ERROR_TYPE, e.getMessage()));
         } finally { 
